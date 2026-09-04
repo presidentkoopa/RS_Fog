@@ -1,0 +1,7 @@
+// RS_Fog -- engine is UZDXREMA. The fog-slab natives are UZDXREMA-only; there
+// is no older floor that works.
+version "4.12"
+
+#include "zscript/rsf_util.zs"
+#include "zscript/rsf_presets.zs"
+#include "zscript/rsf_handler.zs"

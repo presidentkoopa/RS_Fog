@@ -1,0 +1,136 @@
+// RS_Fog -- CVars
+//
+// A body of mist with a real world-space ceiling: stand knee deep in it and
+// look down at its surface. Analytic, not raymarched, which is why it is
+// affordable at 90Hz per eye.
+//
+// The engine had every one of these knobs and no way to reach them -- no
+// on/off, no menu, and nothing connecting the fog to anything happening in the
+// game. This is that.
+
+// ---------------------------------------------------------------- master --
+server bool  rsf_enabled     = true;
+server int   rsf_preset      = 1;
+// Internal: the preset last applied, so a preset only re-applies when it
+// CHANGES rather than on every map load, which would wipe slider tweaks.
+server int   rsf_preset_applied = -1;
+
+// ------------------------------------------------------------------ body --
+server float rsf_top         = 56.0;    // how high the mist reaches
+server float rsf_density     = 0.45;    // 0 = off
+server float rsf_soft        = 28.0;    // how soft the top edge is
+server float rsf_scatter     = 1.0;     // how much the flashlight lights it
+
+// Which reference the edges follow. 0 = a fixed world height, positive =
+// follows the floor. The magnitude is GENTLENESS: 0.35 turns a staircase into
+// a slope rather than a flight of steps. A fixed height is right for one
+// flooded room and wrong for a level -- walk upstairs and you are above the
+// weather.
+server float rsf_follow      = 0.35;
+
+server float rsf_bottom      = -256.0;
+server float rsf_bottom_period = 0.0;
+server float rsf_bottom_roll = 0.0;
+
+// --------------------------------------------------------------- surface --
+// A flat top reads as a sheet the moment you can see it clearly. Two waves at
+// an angle interfere, and interference is what stops it looking like machinery.
+server float rsf_surf_amp    = 8.0;
+server float rsf_surf_len    = 288.0;
+server float rsf_surf_speed  = 0.7;
+server float rsf_surf_cross  = 0.6;
+
+// ----------------------------------------------------------------- churn --
+server float rsf_noise_scale = 0.010;
+server float rsf_noise_depth = 0.40;
+server float rsf_drift_x     = 2.5;
+server float rsf_drift_y     = 1.2;
+
+// -------------------------------------------------------------- tendrils --
+// Wisps standing up out of the surface. Density 0 = none.
+server float rsf_tend_density = 0.0;
+server float rsf_tend_spacing = 160.0;
+server float rsf_tend_radius  = 22.0;
+server float rsf_tend_height  = 96.0;
+server float rsf_tend_rise    = 0.5;
+server float rsf_tend_spread  = 0.4;
+server float rsf_tend_lean    = 0.2;
+server float rsf_tend_taper   = 0.7;
+
+// ---------------------------------------------------------------- colour --
+server int   rsf_col_r       = 168;
+server int   rsf_col_g       = 176;
+server int   rsf_col_b       = 190;
+
+// A second colour mixed through it, for mist that is not one flat tone.
+server int   rsf_grad_r      = 90;
+server int   rsf_grad_g      = 110;
+server int   rsf_grad_b      = 92;
+server float rsf_grad_mix    = 0.0;
+
+// How much colour the mist takes from the room's own glow. Turn it up and the
+// fog goes whatever colour the lighting is.
+server float rsf_pickup      = 0.55;
+
+// ------------------------------------------------------------------ wake --
+// One lagging point that thins the mist where you just walked.
+server bool  rsf_wake        = true;
+server float rsf_wake_radius = 56.0;
+server float rsf_wake_strength = 0.8;
+server float rsf_wake_vel_x  = 0.0;
+server float rsf_wake_vel_y  = 0.0;
+server float rsf_wake_stretch = 1.6;
+
+// A bow wave pushed ahead of it.
+server float rsf_bow         = 0.0;
+server float rsf_bow_width   = 48.0;
+server float rsf_bow_thin    = 0.6;
+
+// ---------------------------------------------------------------- waders --
+// Monsters shouldering the mist aside as they move.
+//
+// THROTTLED HARD on purpose. There are 32 disturbance slots, recycled oldest
+// first, so thirty monsters each pushing one every tic means every slot is a
+// tenth of a second old and nothing lives long enough to read as a wake. One
+// per tick-window, nearest first.
+server bool  rsf_waders      = true;
+server int   rsf_wader_every = 6;       // tics between picks
+server float rsf_wader_range = 1024.0;  // how far out to bother looking
+
+// ---------------------------------------------------------------- events --
+// A ring travelling outward from something that just died.
+server bool  rsf_death_ripple = true;
+server float rsf_death_strength = 0.8;
+server float rsf_death_speed  = 220.0;
+server float rsf_death_life   = 0.9;
+
+// An explosion LIGHTS the mist rather than clearing it. This is the one
+// disturbance mode that adds light and no density, which is why it still shows
+// in a room with the fog switched off.
+server bool  rsf_ignite      = true;
+server int   rsf_ignite_min  = 20;      // minimum radius damage to count
+server float rsf_ignite_radius = 192.0;
+server float rsf_ignite_strength = 1.0;
+server float rsf_ignite_speed = 320.0;
+server float rsf_ignite_life = 0.5;
+
+// --------------------------------------------------------------- tornado --
+// The same mist shaped into a funnel you can stand inside. Independent of the
+// slab -- a tornado in clear air is a thing you can ask for.
+server bool  rsf_tornado     = false;
+server float rsf_torn_x      = 0.0;
+server float rsf_torn_y      = 0.0;
+server float rsf_torn_base   = 0.0;
+server float rsf_torn_top    = 512.0;
+server float rsf_torn_rbase  = 64.0;
+server float rsf_torn_rtop   = 256.0;
+server float rsf_torn_density = 0.8;
+server float rsf_torn_swirl  = 1.0;
+server float rsf_torn_spin   = 1.0;
+server float rsf_torn_twist  = 0.5;
+server float rsf_torn_lean   = 0.15;
+server float rsf_torn_lean_period = 8.0;
+server float rsf_torn_scatter = 1.0;
+server int   rsf_torn_col_r  = 150;
+server int   rsf_torn_col_g  = 150;
+server int   rsf_torn_col_b  = 160;

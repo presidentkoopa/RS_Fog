@@ -1,0 +1,168 @@
+OptionValue "RSF_Preset"
+{
+	0, "Off"
+	1, "Ground Mist"
+	2, "Swamp"
+	3, "Smoke"
+	4, "Toxic"
+	5, "Blizzard"
+	6, "Ember"
+	7, "Deep"
+}
+
+OptionMenu "RSFMain"
+{
+	Title "Fog"
+	StaticText "Mist with a real ceiling -- stand knee deep in", "gray"
+	StaticText "it and look down at its surface. Worked out per", "gray"
+	StaticText "pixel rather than by marching a ray, which is", "gray"
+	StaticText "why it runs at VR framerates at all.", "gray"
+	StaticText ""
+	Option "Enabled", "rsf_enabled", "OnOff"
+	Option "Preset", "rsf_preset", "RSF_Preset"
+	StaticText "A preset sets the look below. It never touches", "gold"
+	StaticText "the switches on the Events page.", "gold"
+	StaticText ""
+	Submenu "The Body", "RSFBody"
+	Submenu "Surface and Churn", "RSFSurface"
+	Submenu "Tendrils", "RSFTendrils"
+	Submenu "Colour", "RSFColor"
+	Submenu "Events", "RSFEvents"
+	Submenu "Tornado", "RSFTornado"
+}
+
+OptionMenu "RSFBody"
+{
+	Title "The Body"
+	Slider "How high it reaches", "rsf_top", 0.0, 640.0, 8.0, 0
+	Slider "How thick", "rsf_density", 0.0, 1.5, 0.05, 2
+	Slider "How soft the top edge", "rsf_soft", 1.0, 160.0, 4.0, 0
+	StaticText ""
+	Slider "Lit by the flashlight", "rsf_scatter", 0.0, 3.0, 0.1, 1
+	StaticText "How much the torch cone shows up in it.", "gray"
+	StaticText ""
+	Slider "Follows the floor", "rsf_follow", 0.0, 1.0, 0.05, 2
+	StaticText "0 pins it to a fixed world height, which is", "gray"
+	StaticText "right for one flooded room and wrong for a", "gray"
+	StaticText "level -- walk upstairs and you are above the", "gray"
+	StaticText "weather. Higher values keep a constant depth", "gray"
+	StaticText "underfoot; the number is how GENTLY it does", "gray"
+	StaticText "it, so a staircase becomes a slope rather", "gray"
+	StaticText "than a flight of steps.", "gray"
+	StaticText ""
+	Slider "Bottom", "rsf_bottom", -1024.0, 256.0, 16.0, 0
+}
+
+OptionMenu "RSFSurface"
+{
+	Title "Surface and Churn"
+	StaticText "A flat top reads as a sheet the moment you can", "gray"
+	StaticText "see it clearly. Two waves at an angle interfere,", "gray"
+	StaticText "and interference is what stops it looking like", "gray"
+	StaticText "machinery.", "gray"
+	StaticText ""
+	Slider "Wave height", "rsf_surf_amp", 0.0, 64.0, 2.0, 0
+	Slider "Wavelength", "rsf_surf_len", 32.0, 768.0, 16.0, 0
+	Slider "Speed", "rsf_surf_speed", 0.0, 4.0, 0.1, 1
+	Slider "Cross swell", "rsf_surf_cross", 0.0, 1.0, 0.05, 2
+	StaticText "0 corrugates in one direction. Turn it up and", "gray"
+	StaticText "the ridges start rolling instead.", "gray"
+	StaticText ""
+	Slider "Churn scale", "rsf_noise_scale", 0.001, 0.05, 0.001, 3
+	Slider "Churn depth", "rsf_noise_depth", 0.0, 1.0, 0.05, 2
+	Slider "Drift east", "rsf_drift_x", -32.0, 32.0, 1.0, 0
+	Slider "Drift north", "rsf_drift_y", -32.0, 32.0, 1.0, 0
+}
+
+OptionMenu "RSFTendrils"
+{
+	Title "Tendrils"
+	StaticText "Wisps standing up out of the surface.", "gray"
+	StaticText "Density 0 turns them off entirely.", "gray"
+	StaticText ""
+	Slider "Density", "rsf_tend_density", 0.0, 1.0, 0.05, 2
+	Slider "Spacing", "rsf_tend_spacing", 48.0, 512.0, 16.0, 0
+	Slider "Thickness", "rsf_tend_radius", 4.0, 96.0, 2.0, 0
+	Slider "Height", "rsf_tend_height", 16.0, 384.0, 8.0, 0
+	StaticText ""
+	Slider "Rise", "rsf_tend_rise", 0.0, 2.0, 0.05, 2
+	Slider "Spread", "rsf_tend_spread", 0.0, 1.0, 0.05, 2
+	Slider "Lean", "rsf_tend_lean", 0.0, 1.0, 0.05, 2
+	Slider "Taper", "rsf_tend_taper", 0.0, 1.0, 0.05, 2
+}
+
+OptionMenu "RSFColor"
+{
+	Title "Colour"
+	Slider "Red", "rsf_col_r", 0, 255, 5, 0
+	Slider "Green", "rsf_col_g", 0, 255, 5, 0
+	Slider "Blue", "rsf_col_b", 0, 255, 5, 0
+	StaticText ""
+	StaticText "A second colour mixed through it, so the mist", "gray"
+	StaticText "is not one flat tone.", "gray"
+	Slider "Mix", "rsf_grad_mix", 0.0, 1.0, 0.05, 2
+	Slider "Second red", "rsf_grad_r", 0, 255, 5, 0
+	Slider "Second green", "rsf_grad_g", 0, 255, 5, 0
+	Slider "Second blue", "rsf_grad_b", 0, 255, 5, 0
+	StaticText ""
+	Slider "Takes colour from the room", "rsf_pickup", 0.0, 1.0, 0.05, 2
+	StaticText "Turn it up and the fog goes whatever colour the", "gray"
+	StaticText "lighting is. Pairs with the glow lanes.", "gray"
+}
+
+OptionMenu "RSFEvents"
+{
+	Title "Events"
+	StaticText "What the world does to the mist. A preset never", "gold"
+	StaticText "touches these.", "gold"
+	StaticText ""
+	Option "Your wake", "rsf_wake", "OnOff"
+	Slider "Wake size", "rsf_wake_radius", 0.0, 192.0, 8.0, 0
+	Slider "Wake strength", "rsf_wake_strength", 0.0, 1.0, 0.05, 2
+	Slider "Wake stretch", "rsf_wake_stretch", 0.0, 4.0, 0.1, 1
+	StaticText "One lagging point that thins the mist where you", "gray"
+	StaticText "just walked.", "gray"
+	StaticText ""
+	Option "Monsters part it", "rsf_waders", "OnOff"
+	Slider "One every N tics", "rsf_wader_every", 1, 20, 1, 0
+	StaticText "There are 32 disturbance slots and they recycle", "gray"
+	StaticText "oldest first. Push one per monster per tic and", "gray"
+	StaticText "every slot is a tenth of a second old, so none", "gray"
+	StaticText "lives long enough to read as a wake.", "gray"
+	StaticText ""
+	Option "Deaths ripple", "rsf_death_ripple", "OnOff"
+	Slider "Ripple strength", "rsf_death_strength", 0.0, 1.0, 0.05, 2
+	Slider "Ripple speed", "rsf_death_speed", 0.0, 600.0, 20.0, 0
+	StaticText ""
+	Option "Explosions light it", "rsf_ignite", "OnOff"
+	Slider "Flash size", "rsf_ignite_radius", 32.0, 512.0, 16.0, 0
+	Slider "Flash strength", "rsf_ignite_strength", 0.0, 2.0, 0.1, 1
+	StaticText "This one adds LIGHT and no mist, so it still", "gray"
+	StaticText "shows with the fog switched off.", "gray"
+}
+
+OptionMenu "RSFTornado"
+{
+	Title "Tornado"
+	StaticText "The same mist shaped into a funnel you can stand", "gray"
+	StaticText "inside. Independent of the body above -- a", "gray"
+	StaticText "tornado in clear air is a thing you can ask for.", "gray"
+	StaticText ""
+	Option "Enabled", "rsf_tornado", "OnOff"
+	StaticText ""
+	Slider "Density", "rsf_torn_density", 0.0, 2.0, 0.05, 2
+	Slider "Base height", "rsf_torn_base", -512.0, 512.0, 16.0, 0
+	Slider "Top height", "rsf_torn_top", 0.0, 2048.0, 32.0, 0
+	Slider "Radius at the base", "rsf_torn_rbase", 8.0, 512.0, 8.0, 0
+	Slider "Radius at the top", "rsf_torn_rtop", 8.0, 1024.0, 16.0, 0
+	StaticText ""
+	Slider "Swirl", "rsf_torn_swirl", 0.0, 4.0, 0.1, 1
+	Slider "Spin", "rsf_torn_spin", 0.0, 4.0, 0.1, 1
+	Slider "Twist", "rsf_torn_twist", 0.0, 2.0, 0.05, 2
+	Slider "Lean", "rsf_torn_lean", 0.0, 1.0, 0.05, 2
+	StaticText ""
+	Slider "Lit by the flashlight", "rsf_torn_scatter", 0.0, 3.0, 0.1, 1
+	Slider "Red", "rsf_torn_col_r", 0, 255, 5, 0
+	Slider "Green", "rsf_torn_col_g", 0, 255, 5, 0
+	Slider "Blue", "rsf_torn_col_b", 0, 255, 5, 0
+}
