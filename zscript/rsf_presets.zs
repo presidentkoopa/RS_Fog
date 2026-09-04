@@ -53,8 +53,31 @@ class RSF_Presets
 		F("rsf_indoor", indoor); F("rsf_outdoor", outdoor);
 	}
 
+	// EVERY TERM, NEUTRAL. Called by Apply before the preset runs, so a preset
+	// only has to state what it actually cares about and can never wear the
+	// leftovers of the one before it.
+	//
+	// This is the shape GlowInTheDark and Darkness already had and Fog did not,
+	// which is exactly how seven presets ended up inheriting an indoor/outdoor
+	// split they never asked for: pick Courtyard, switch to Swamp, and Swamp
+	// stayed thin indoors with nothing in the menu to explain it.
+	static void Base()
+	{
+		Zones(1.0, 1.0);
+		Slab(64.0, 0.55, 24.0, 1.0, 0.35);
+		Motion(10.0, 256.0, 1.0, 0.6, 0.012, 0.45, 3.0, 1.5);
+		Tendrils(0.0, 160.0, 22.0, 96.0, 0.5, 0.4, 0.2, 0.7);
+		RGB("rsf_col", 168, 176, 190);
+		RGB("rsf_grad", 0, 0, 0);
+		F("rsf_grad_mix", 0.0);
+		F("rsf_pickup", 0.5);
+		F("rsf_bow", 0.0);
+	}
+
 	static void Apply(int idx)
 	{
+		Base();
+
 		switch (idx)
 		{
 		default:
