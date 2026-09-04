@@ -44,7 +44,6 @@ class RSF_Handler : EventHandler
 		// exactly what rsf_preset_applied exists to prevent, and what the
 		// cvarinfo comment on it says it prevents. This bypassed its own guard.
 		SyncPreset();
-		SeedTornado();
 		Level.ClearFogDisturb();
 		Push();
 	}
@@ -77,22 +76,6 @@ class RSF_Handler : EventHandler
 		Push();
 	}
 
-	// WHERE THE FUNNEL STANDS. rsf_torn_x/y had no menu entry and no writer,
-	// so they sat at zero and the tornado always stood at world origin -- off
-	// the map on most levels. Ticking Enabled produced nothing, anywhere.
-	//
-	// Seeded from the player at map load when unset, so it lands somewhere you
-	// can walk to; the sliders then move it. Play scope, because it reads the
-	// world.
-	void SeedTornado()
-	{
-		if (RSF.GetF("rsf_torn_x", 0.0) != 0.0 || RSF.GetF("rsf_torn_y", 0.0) != 0.0) return;
-		let pmo = players[consoleplayer].mo;
-		if (!pmo) return;
-		RSF.SetF("rsf_torn_x", pmo.pos.x);
-		RSF.SetF("rsf_torn_y", pmo.pos.y);
-	}
-
 	clearscope void SyncPreset()
 	{
 		int want = RSF.GetI("rsf_preset", 1);
@@ -110,11 +93,6 @@ class RSF_Handler : EventHandler
 		if (!RSF.GetB("rsf_enabled", true))
 		{
 			Level.ClearFogSlab();
-			// ClearFogSlab clears the SLAB. The funnel and the wisps are gated
-			// independently in the shader, so switching the mod off used to
-			// leave a tornado spinning with no control anywhere that removed
-			// it.
-			Level.SetTornado(0, 0, 0, 0, 0, 0, 0);
 			Level.SetFogTendrils(160.0, 22.0, 96.0, 0.0, 0.5, 0.4, 0.2, 0.7);
 			return;
 		}
@@ -182,31 +160,6 @@ class RSF_Handler : EventHandler
 		// two cvars nothing writes -- so this always pushed a zero direction
 		// and the stretch could never do anything.
 
-		// The funnel. Same mist, different shape, and independent of the slab
-		// -- a tornado in clear air is a thing you can ask for.
-		if (RSF.GetB("rsf_tornado", false))
-		{
-			double cx = RSF.GetF("rsf_torn_x", 0.0);
-			double cy = RSF.GetF("rsf_torn_y", 0.0);
-			Level.SetTornado(cx, cy,
-				RSF.GetF("rsf_torn_base", 0.0),
-				RSF.GetF("rsf_torn_top", 512.0),
-				RSF.GetF("rsf_torn_rbase", 64.0),
-				RSF.GetF("rsf_torn_rtop", 256.0),
-				RSF.GetF("rsf_torn_density", 0.8));
-			Level.SetTornadoMotion(
-				RSF.GetF("rsf_torn_swirl", 1.0),
-				RSF.GetF("rsf_torn_spin", 1.0),
-				RSF.GetF("rsf_torn_twist", 0.5),
-				RSF.GetF("rsf_torn_lean", 0.15),
-				RSF.GetF("rsf_torn_lean_period", 8.0));
-			Level.SetTornadoLook(RSF.RGB("rsf_torn_col"),
-				RSF.GetF("rsf_torn_scatter", 1.0));
-		}
-		else
-		{
-			Level.SetTornado(0, 0, 0, 0, 0, 0, 0);   // density 0 = off
-		}
 	}
 
 	// ---- what happens in it ------------------------------------------------

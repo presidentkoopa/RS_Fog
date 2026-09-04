@@ -37,7 +37,6 @@ OptionMenu "RSFMain"
 	Submenu "Colour", "RSFColor"
 	Submenu "Indoors and Outdoors", "RSFRooms"
 	Submenu "Events", "RSFEvents"
-	Submenu "Tornado", "RSFTornado"
 }
 
 OptionMenu "RSFBody"
@@ -171,39 +170,6 @@ OptionMenu "RSFEvents"
 	Slider "Flash strength", "rsf_ignite_strength", 0.0, 2.0, 0.1, 1
 	StaticText "This one adds LIGHT and no mist, so it still", "gray"
 	StaticText "shows with the fog switched off.", "gray"
-}
-
-OptionMenu "RSFTornado"
-{
-	Title "Tornado"
-	StaticText "The same mist shaped into a funnel you can stand", "gray"
-	StaticText "inside. Independent of the body above -- a", "gray"
-	StaticText "tornado in clear air is a thing you can ask for.", "gray"
-	StaticText ""
-	Option "Enabled", "rsf_tornado", "OnOff"
-	StaticText ""
-	Slider "Position east", "rsf_torn_x", -8192, 8192, 64, 0
-	Slider "Position north", "rsf_torn_y", -8192, 8192, 64, 0
-	StaticText "Seeded from where you are standing when the map", "gray"
-	StaticText "loads, so it lands somewhere you can walk to.", "gray"
-	StaticText "Without this it stood at world origin, which is", "gray"
-	StaticText "off the map on most levels -- Enabled did nothing.", "gray"
-	StaticText ""
-	Slider "Density", "rsf_torn_density", 0.0, 2.0, 0.05, 2
-	Slider "Base height", "rsf_torn_base", -512.0, 512.0, 16.0, 0
-	Slider "Top height", "rsf_torn_top", 0.0, 2048.0, 32.0, 0
-	Slider "Radius at the base", "rsf_torn_rbase", 8.0, 512.0, 8.0, 0
-	Slider "Radius at the top", "rsf_torn_rtop", 8.0, 1024.0, 16.0, 0
-	StaticText ""
-	Slider "Swirl", "rsf_torn_swirl", 0.0, 4.0, 0.1, 1
-	Slider "Spin", "rsf_torn_spin", 0.0, 4.0, 0.1, 1
-	Slider "Twist", "rsf_torn_twist", 0.0, 2.0, 0.05, 2
-	Slider "Lean", "rsf_torn_lean", 0.0, 1.0, 0.05, 2
-	StaticText ""
-	Slider "Lit by the flashlight", "rsf_torn_scatter", 0.0, 3.0, 0.1, 1
-	Slider "Red", "rsf_torn_col_r", 0, 255, 5, 0
-	Slider "Green", "rsf_torn_col_g", 0, 255, 5, 0
-	Slider "Blue", "rsf_torn_col_b", 0, 255, 5, 0
 }
 
 // WITHOUT THIS THE MENU ABOVE EXISTS AND IS UNREACHABLE. Defining an
