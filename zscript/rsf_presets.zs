@@ -90,6 +90,7 @@ class RSF_Presets
 	// that reads as a place rather than as an effect.
 	static void GroundMist()
 	{
+		Zones(1.0, 1.0);
 		Slab(56.0, 0.45, 28.0, 1.0, 0.35);
 		Motion(8.0, 288.0, 0.7, 0.6, 0.010, 0.40, 2.5, 1.2);
 		Tendrils(0.0, 160.0, 22.0, 96.0, 0.5, 0.4, 0.2, 0.7);
@@ -101,6 +102,7 @@ class RSF_Presets
 	// Waist-high, heavy, with wisps standing out of it. Slow.
 	static void Swamp()
 	{
+		Zones(1.0, 1.0);
 		Slab(112.0, 0.7, 40.0, 1.1, 0.3);
 		Motion(16.0, 224.0, 0.45, 0.75, 0.014, 0.55, 1.5, 0.8);
 		Tendrils(0.5, 128.0, 26.0, 132.0, 0.35, 0.5, 0.3, 0.65);
@@ -114,6 +116,7 @@ class RSF_Presets
 	// already happened.
 	static void Smoke()
 	{
+		Zones(1.0, 1.0);
 		Slab(176.0, 0.62, 56.0, 1.5, 0.2);
 		Motion(22.0, 176.0, 1.4, 0.8, 0.020, 0.75, 6.0, 3.5);
 		Tendrils(0.35, 200.0, 34.0, 180.0, 0.9, 0.6, 0.45, 0.5);
@@ -127,6 +130,7 @@ class RSF_Presets
 	// colour the lighting is -- which is the point.
 	static void Toxic()
 	{
+		Zones(1.0, 1.0);
 		Slab(88.0, 0.5, 32.0, 1.3, 0.35);
 		Motion(12.0, 208.0, 1.1, 0.65, 0.016, 0.5, 4.0, 2.0);
 		Tendrils(0.4, 144.0, 20.0, 120.0, 0.7, 0.45, 0.25, 0.6);
@@ -139,6 +143,7 @@ class RSF_Presets
 	// Thick, fast, and driven sideways. The drift is what sells it.
 	static void Blizzard()
 	{
+		Zones(1.0, 1.0);
 		Slab(320.0, 0.5, 96.0, 1.6, 0.1);
 		Motion(6.0, 128.0, 2.4, 0.4, 0.026, 0.35, 22.0, 9.0);
 		Tendrils(0.0, 160.0, 22.0, 96.0, 0.5, 0.4, 0.2, 0.7);
@@ -151,6 +156,7 @@ class RSF_Presets
 	// whatever is glowing nearby.
 	static void Ember()
 	{
+		Zones(1.0, 1.0);
 		Slab(72.0, 0.55, 30.0, 1.2, 0.4);
 		Motion(10.0, 256.0, 0.8, 0.6, 0.013, 0.5, 3.0, 1.6);
 		Tendrils(0.45, 152.0, 24.0, 104.0, 0.6, 0.4, 0.25, 0.7);
@@ -278,6 +284,7 @@ class RSF_Presets
 	// Over your head. You are inside it, not looking at it.
 	static void Deep()
 	{
+		Zones(1.0, 1.0);
 		Slab(512.0, 0.8, 128.0, 1.4, 0.05);
 		Motion(28.0, 320.0, 0.6, 0.7, 0.009, 0.6, 2.0, 1.0);
 		Tendrils(0.0, 160.0, 22.0, 96.0, 0.5, 0.4, 0.2, 0.7);
