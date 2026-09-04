@@ -134,3 +134,17 @@ server float rsf_torn_scatter = 1.0;
 server int   rsf_torn_col_r  = 150;
 server int   rsf_torn_col_g  = 150;
 server int   rsf_torn_col_b  = 160;
+
+// HOW MUCH FOG A ROOM GETS BY WHETHER IT HAS SKY OVER IT.
+//
+// One slab over the whole level cannot tell a courtyard from a cellar, and
+// those want opposite things. A sky ceiling is how Doom has always marked
+// outdoors, so this costs no mapping work.
+//
+// The split is per SURFACE, which is what makes a window work: the far wall
+// outside is an outdoor draw and fogs like one, while the room you are
+// standing in does not. You see weather you are not standing in.
+//
+// Both 1 is one fog everywhere.
+server float rsf_indoor  = 1.0;
+server float rsf_outdoor = 1.0;

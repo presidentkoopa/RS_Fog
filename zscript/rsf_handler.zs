@@ -100,6 +100,14 @@ class RSF_Handler : EventHandler
 		double follow = RSF.GetF("rsf_follow", 0.35);
 		Level.SetFogFollow(follow, follow);
 
+		// HOW MUCH EACH ROOM GETS. A sky ceiling is outdoors, which every Doom
+		// map already marks, so a courtyard and a cellar can want opposite
+		// amounts without anything being authored for it. Both 1 is one fog
+		// everywhere, which is what it was.
+		Level.SetFogZones(
+			RSF.GetF("rsf_indoor", 1.0),
+			RSF.GetF("rsf_outdoor", 1.0));
+
 		Level.SetFogSlab(
 			RSF.GetF("rsf_top", 64.0),
 			RSF.GetF("rsf_density", 0.55),

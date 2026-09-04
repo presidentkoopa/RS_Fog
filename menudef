@@ -8,6 +8,14 @@ OptionValue "RSF_Preset"
 	5, "Blizzard"
 	6, "Ember"
 	7, "Deep"
+	8, "Faint Haze"
+	9, "Light Mist"
+	10, "Heavy Mist"
+	11, "Murk"
+	12, "Pea Soup"
+	13, "Cellar (damp indoors)"
+	14, "Courtyard (weather outside)"
+	15, "Night Air (heavy outside)"
 }
 
 OptionMenu "RSFMain"
@@ -27,6 +35,7 @@ OptionMenu "RSFMain"
 	Submenu "Surface and Churn", "RSFSurface"
 	Submenu "Tendrils", "RSFTendrils"
 	Submenu "Colour", "RSFColor"
+	Submenu "Indoors and Outdoors", "RSFRooms"
 	Submenu "Events", "RSFEvents"
 	Submenu "Tornado", "RSFTornado"
 }
@@ -110,6 +119,29 @@ OptionMenu "RSFColor"
 	StaticText "lighting is. Pairs with the glow lanes.", "gray"
 }
 
+OptionMenu "RSFRooms"
+{
+	Title "Indoors and Outdoors"
+	StaticText "A sky ceiling is how Doom marks outdoors, so this", "gray"
+	StaticText "works on any map without it being authored for it.", "gray"
+	StaticText ""
+	Slider "Indoors", "rsf_indoor", 0.0, 2.0, 0.05, 2
+	Slider "Outdoors", "rsf_outdoor", 0.0, 2.0, 0.05, 2
+	StaticText "Multiplies the density above. Both 1.00 is one fog", "gray"
+	StaticText "everywhere, which is how it used to be.", "gray"
+	StaticText ""
+	StaticText "ROOMS WITH WINDOWS work out of this for free.", "gold"
+	StaticText "The split is per surface, so the far wall seen", "gray"
+	StaticText "through a window is an outdoor draw and fogs like", "gray"
+	StaticText "one, while the room you are standing in does not.", "gray"
+	StaticText "You see weather you are not standing in.", "gray"
+	StaticText ""
+	StaticText "Set indoors to 0 for weather that stops at the", "gray"
+	StaticText "door. A small value reads better than none -- a", "gray"
+	StaticText "room at 0 next to open air at 1.5 looks like two", "gray"
+	StaticText "unrelated places.", "gray"
+}
+
 OptionMenu "RSFEvents"
 {
 	Title "Events"
@@ -165,4 +197,13 @@ OptionMenu "RSFTornado"
 	Slider "Red", "rsf_torn_col_r", 0, 255, 5, 0
 	Slider "Green", "rsf_torn_col_g", 0, 255, 5, 0
 	Slider "Blue", "rsf_torn_col_b", 0, 255, 5, 0
+}
+
+// WITHOUT THIS THE MENU ABOVE EXISTS AND IS UNREACHABLE. Defining an
+// OptionMenu only names it; nothing in the game links to it until something
+// adds a Submenu entry pointing at it. Same hook RS_Darkness and
+// RS_GlowInTheDark use, which is why theirs showed up and this one did not.
+AddOptionMenu "OptionsMenu"
+{
+	Submenu "Fog", "RSFMain"
 }
