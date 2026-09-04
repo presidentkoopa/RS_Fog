@@ -39,8 +39,12 @@ class RSF_Handler : EventHandler
 
 	override void WorldLoaded(WorldEvent e)
 	{
-		lastPreset = RSF.GetI("rsf_preset", 1);
-		RSF_Presets.Apply(lastPreset);
+		// SyncPreset, NOT an unconditional Apply. Apply now calls Base first,
+		// so applying on every map load resets every setting -- which is
+		// exactly what rsf_preset_applied exists to prevent, and what the
+		// cvarinfo comment on it says it prevents. This bypassed its own guard.
+		SyncPreset();
+		SeedTornado();
 		Level.ClearFogDisturb();
 		Push();
 	}
@@ -73,6 +77,22 @@ class RSF_Handler : EventHandler
 		Push();
 	}
 
+	// WHERE THE FUNNEL STANDS. rsf_torn_x/y had no menu entry and no writer,
+	// so they sat at zero and the tornado always stood at world origin -- off
+	// the map on most levels. Ticking Enabled produced nothing, anywhere.
+	//
+	// Seeded from the player at map load when unset, so it lands somewhere you
+	// can walk to; the sliders then move it. Play scope, because it reads the
+	// world.
+	void SeedTornado()
+	{
+		if (RSF.GetF("rsf_torn_x", 0.0) != 0.0 || RSF.GetF("rsf_torn_y", 0.0) != 0.0) return;
+		let pmo = players[consoleplayer].mo;
+		if (!pmo) return;
+		RSF.SetF("rsf_torn_x", pmo.pos.x);
+		RSF.SetF("rsf_torn_y", pmo.pos.y);
+	}
+
 	clearscope void SyncPreset()
 	{
 		int want = RSF.GetI("rsf_preset", 1);
@@ -90,6 +110,12 @@ class RSF_Handler : EventHandler
 		if (!RSF.GetB("rsf_enabled", true))
 		{
 			Level.ClearFogSlab();
+			// ClearFogSlab clears the SLAB. The funnel and the wisps are gated
+			// independently in the shader, so switching the mod off used to
+			// leave a tornado spinning with no control anywhere that removed
+			// it.
+			Level.SetTornado(0, 0, 0, 0, 0, 0, 0);
+			Level.SetFogTendrils(160.0, 22.0, 96.0, 0.0, 0.5, 0.4, 0.2, 0.7);
 			return;
 		}
 
@@ -151,10 +177,10 @@ class RSF_Handler : EventHandler
 			RSF.GetF("rsf_bow", 0.0),
 			RSF.GetF("rsf_bow_width", 48.0),
 			RSF.GetF("rsf_bow_thin", 0.6));
-		Level.SetFogWakeMotion(
-			RSF.GetF("rsf_wake_vel_x", 0.0),
-			RSF.GetF("rsf_wake_vel_y", 0.0),
-			RSF.GetF("rsf_wake_stretch", 1.6));
+		// The wake's MOTION is pushed by PushWake, which is play scope and has
+		// the player's velocity. It used to be sent from here as well, reading
+		// two cvars nothing writes -- so this always pushed a zero direction
+		// and the stretch could never do anything.
 
 		// The funnel. Same mist, different shape, and independent of the slab
 		// -- a tornado in clear air is a thing you can ask for.
@@ -195,6 +221,13 @@ class RSF_Handler : EventHandler
 		Level.SetFogWake(pmo.pos,
 			RSF.GetF("rsf_wake_radius", 56.0),
 			RSF.GetF("rsf_wake_strength", 0.8));
+
+		// THE DIRECTION, or the stretch does nothing. The shader only stretches
+		// the wake when it has a velocity to stretch it ALONG -- and nothing
+		// ever supplied one, so the Wake stretch slider had never done anything
+		// at all. The position was pushed and the motion was not.
+		Level.SetFogWakeMotion(pmo.vel.x, pmo.vel.y,
+			RSF.GetF("rsf_wake_stretch", 1.6));
 	}
 
 	// Things wading through it. The shader can be shouldered aside by anything
@@ -254,11 +287,26 @@ class RSF_Handler : EventHandler
 	}
 
 	// Anything exploding lights the mist from inside.
+	// The tic and inflictor of the last ignite, so one blast is one flash.
+	private int lastIgniteTic;
+	private Actor lastIgniteSrc;
+
 	override void WorldThingDamaged(WorldEvent e)
 	{
 		if (!RSF.GetB("rsf_enabled", true) || !RSF.GetB("rsf_ignite", true)) return;
 		if (!e || !e.Thing || !e.DamageIsRadius) return;
 		if (e.Damage < RSF.GetI("rsf_ignite_min", 20)) return;
+
+		// ONE BLAST, ONE FLASH. WorldThingDamaged fires once per thing hurt,
+		// and a rocket into a pack hurts all of them at the same point on the
+		// same tic -- so a crowd got one ignite per victim. The shader ADDS
+		// them, so the flash was eight times too bright for hitting eight
+		// things, and eight of the thirty-two disturbance slots went in one
+		// tic, which starves everything else and lengthens the shader's
+		// disturbance loop for the better part of a second.
+		if (e.Inflictor == lastIgniteSrc && level.maptime == lastIgniteTic) return;
+		lastIgniteSrc = e.Inflictor;
+		lastIgniteTic = level.maptime;
 
 		Level.FogDisturb(e.DamagePosition.x, e.DamagePosition.y, e.DamagePosition.z,
 			RSF.GetF("rsf_ignite_radius", 192.0),

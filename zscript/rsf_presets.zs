@@ -71,6 +71,7 @@ class RSF_Presets
 		RGB("rsf_grad", 0, 0, 0);
 		F("rsf_grad_mix", 0.0);
 		F("rsf_pickup", 0.5);
+		F("rsf_bottom", -256.0);
 		F("rsf_bow", 0.0);
 	}
 

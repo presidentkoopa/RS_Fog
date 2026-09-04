@@ -182,6 +182,13 @@ OptionMenu "RSFTornado"
 	StaticText ""
 	Option "Enabled", "rsf_tornado", "OnOff"
 	StaticText ""
+	Slider "Position east", "rsf_torn_x", -8192, 8192, 64, 0
+	Slider "Position north", "rsf_torn_y", -8192, 8192, 64, 0
+	StaticText "Seeded from where you are standing when the map", "gray"
+	StaticText "loads, so it lands somewhere you can walk to.", "gray"
+	StaticText "Without this it stood at world origin, which is", "gray"
+	StaticText "off the map on most levels -- Enabled did nothing.", "gray"
+	StaticText ""
 	Slider "Density", "rsf_torn_density", 0.0, 2.0, 0.05, 2
 	Slider "Base height", "rsf_torn_base", -512.0, 512.0, 16.0, 0
 	Slider "Top height", "rsf_torn_top", 0.0, 2048.0, 32.0, 0
