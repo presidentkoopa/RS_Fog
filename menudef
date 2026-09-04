@@ -16,6 +16,10 @@ OptionValue "RSF_Preset"
 	13, "Cellar (damp indoors)"
 	14, "Courtyard (weather outside)"
 	15, "Night Air (heavy outside)"
+	16, "Chimneys"
+	17, "Shelf"
+	18, "Chapel (thick indoors)"
+	19, "Gale"
 }
 
 OptionMenu "RSFMain"

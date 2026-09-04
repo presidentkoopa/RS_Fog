@@ -61,6 +61,78 @@ class RSF_Presets
 	// which is exactly how seven presets ended up inheriting an indoor/outdoor
 	// split they never asked for: pick Courtyard, switch to Swamp, and Swamp
 	// stayed thin indoors with nothing in the menu to explain it.
+	// ---- ground the sixteen do not cover -------------------------------------
+	//
+	// Untouched across the whole existing set: the bottom edge (every preset is
+	// a half-space), negative drift, and tendrils as the PRIMARY element rather
+	// than a garnish on a thick slab.
+
+	// Columns of steam standing in otherwise clear air. The wisps carry the
+	// whole look and the slab is barely there to hold them up.
+	// Closest to Swamp, and the inverse of it: a sixth of Swamp's density, with
+	// tendrils two and a half times taller, thinner and further apart.
+	static void Chimneys()
+	{
+		Zones(1.0, 1.0);
+		Slab(48.0, 0.12, 26.0, 1.4, 0.45);
+		Motion(6.0, 240.0, 0.5, 0.5, 0.011, 0.35, 1.0, 0.5);
+		Tendrils(0.85, 230.0, 16.0, 300.0, 1.15, 0.7, 0.35, 0.85);
+		RGB("rsf_col", 170, 168, 160);
+		RGB("rsf_grad", 120, 112, 100);
+		F("rsf_grad_mix", 0.35);
+		F("rsf_pickup", 0.7);
+	}
+
+	// A layer floating at chest height with clear air underneath -- duck and
+	// you can see the floor, stand and you cannot see the room.
+	// Closest to Deep, which is also over your head but is a half-space filling
+	// everything below its top. This is the first preset with a real BOTTOM, so
+	// it is a ceiling you look up at as well as a surface you look down on.
+	static void Shelf()
+	{
+		Zones(1.0, 1.0);
+		Slab(132.0, 0.85, 22.0, 1.25, 0.5);
+		F("rsf_bottom", 44.0);
+		Motion(12.0, 268.0, 0.55, 0.7, 0.012, 0.5, 2.0, 1.0);
+		Tendrils(0.0, 160.0, 22.0, 96.0, 0.5, 0.4, 0.2, 0.7);
+		RGB("rsf_col", 146, 152, 168);
+		RGB("rsf_grad", 88, 96, 116);
+		F("rsf_grad_mix", 0.45);
+		F("rsf_pickup", 0.55);
+	}
+
+	// Thick indoors and gone outdoors, so a window reads as a bright hole cut
+	// in the fog. The exact inverse of Courtyard.
+	// Closest to Cellar, but pushes the indoor gain to 1.80 against near
+	// nothing outside, and takes most of its colour from the room so a lit
+	// doorway blooms through it.
+	static void Chapel()
+	{
+		Zones(1.8, 0.05);
+		Slab(160.0, 0.6, 46.0, 1.5, 0.3);
+		Motion(11.0, 320.0, 0.4, 0.65, 0.010, 0.42, 1.2, 0.6);
+		Tendrils(0.2, 180.0, 24.0, 120.0, 0.35, 0.4, 0.2, 0.7);
+		RGB("rsf_col", 158, 150, 136);
+		RGB("rsf_grad", 96, 88, 76);
+		F("rsf_grad_mix", 0.4);
+		F("rsf_pickup", 0.85);
+	}
+
+	// Weather driven hard across open ground and stopping dead at a doorway.
+	// Closest to Courtyard, but this is the widest split the sliders allow, the
+	// drift is nearly four times Courtyard's, and it is the only preset that
+	// drifts SOUTH as well as east.
+	static void Gale()
+	{
+		Zones(0.05, 1.9);
+		Slab(288.0, 0.7, 80.0, 1.5, 0.15);
+		Motion(9.0, 200.0, 2.0, 0.45, 0.024, 0.4, 26.0, -14.0);
+		Tendrils(0.0, 160.0, 22.0, 96.0, 0.5, 0.4, 0.2, 0.7);
+		RGB("rsf_col", 186, 194, 206);
+		F("rsf_grad_mix", 0.0);
+		F("rsf_pickup", 0.35);
+	}
+
 	static void Base()
 	{
 		Zones(1.0, 1.0);
@@ -98,6 +170,10 @@ class RSF_Presets
 		case 13: Cellar();     break;
 		case 14: Courtyard();  break;
 		case 15: NightAir();   break;
+		case 16: Chimneys();   break;
+		case 17: Shelf();      break;
+		case 18: Chapel();     break;
+		case 19: Gale();       break;
 		}
 	}
 
