@@ -13,12 +13,13 @@
 // TWO HALVES.
 //
 // Push() sends the standing settings -- the slab, its surface, tendrils, noise,
-// colour. It is clearscope and runs from UiTick as well as WorldTick, so the
-// fog changes under the options menu while you are looking at it.
+// colour, the wake's shape and the flash colour. It is clearscope and runs from
+// UiTick as well as WorldTick, so the fog changes under the options menu while
+// you are looking at it.
 //
-// The event hooks are play scope and send DISTURBANCES: one-off events with a
-// position and a life, which the engine ages on its own. Those cannot come from
-// UI and should not -- they are things that happened in the world.
+// The event hooks are play scope and send DISTURBANCES and the wake's
+// position: things that happened in the world, with a place and a life. Those
+// cannot come from UI and should not.
 
 class RSF_Handler : EventHandler
 {
@@ -28,12 +29,9 @@ class RSF_Handler : EventHandler
 	const D_IGNITE = 2;   // an expanding sphere that adds LIGHT, not density
 	const D_GOUT   = 3;   // an expanding disc that ADDS mist -- a vent, a burst
 
-	private int lastPreset;
 	private int waderTimer;
-
-	// UI's own copy. See UiTick.
-	private ui int uiLastPreset;
-	private ui bool uiPresetSeen;
+	// The monster picked last window, so the next pick goes to someone else.
+	private Actor lastWader;
 
 	// ---- lifecycle ---------------------------------------------------------
 
@@ -45,6 +43,10 @@ class RSF_Handler : EventHandler
 		// cvarinfo comment on it says it prevents. This bypassed its own guard.
 		SyncPreset();
 		Level.ClearFogDisturb();
+		// No sweep is tinting the mist on a fresh map. The override is nosave,
+		// so it survives in the ini; a tint left by a band that never finished
+		// would otherwise open the next map already coloured.
+		RSF.SetF("rsf_tint_mix", 0.0);
 		Push();
 	}
 
@@ -53,6 +55,7 @@ class RSF_Handler : EventHandler
 		// The slab is level state, not mod state. Leaving it set means the next
 		// map opens inside whatever the last one was wearing.
 		if (Level) { Level.ClearFogSlab(); Level.ClearFogDisturb(); }
+		RSF.SetF("rsf_tint_mix", 0.0);
 	}
 
 	override void WorldTick()
@@ -65,7 +68,7 @@ class RSF_Handler : EventHandler
 
 	// The playsim stops while the menu is up, so WorldTick alone would freeze
 	// the picture exactly while you drag the slider meant to change it. Every
-	// fog setter is clearscope for this reason.
+	// fog setter used here is clearscope for this reason.
 	//
 	// Disturbances are NOT sent from here. They are events in the world, they
 	// carry a position and a life, and firing them off menu ticks would have
@@ -78,7 +81,11 @@ class RSF_Handler : EventHandler
 
 	clearscope void SyncPreset()
 	{
+		// An out-of-range index -- from the console, or a stale ini -- falls
+		// back to the default preset. It used to run Apply's `default` case,
+		// which is Off: the fog vanished and the menu showed a blank.
 		int want = RSF.GetI("rsf_preset", 1);
+		if (want < 0 || want >= RSF_Presets.COUNT) want = 1;
 		if (want == RSF.GetI("rsf_preset_applied", -1)) return;
 		RSF_Presets.Apply(want);
 		RSF.SetI("rsf_preset_applied", want);
@@ -92,15 +99,24 @@ class RSF_Handler : EventHandler
 
 		if (!RSF.GetB("rsf_enabled", true))
 		{
-			Level.ClearFogSlab();
-			Level.SetFogTendrils(160.0, 22.0, 96.0, 0.0, 0.5, 0.4, 0.2, 0.7);
+			// ONCE, on the way off. Clearing every tic while disabled also
+			// erased any other mod's slab for as long as the fog stayed off.
+			if (RSF.GetI("rsf_standing_pushed", 0) != 0)
+			{
+				Level.ClearFogSlab();
+				Level.SetFogTendrils(160.0, 22.0, 96.0, 0.0, 0.5, 0.4, 0.2, 0.7);
+				Level.SetFogBow(0.0, 48.0, 0.6);
+				RSF.SetI("rsf_standing_pushed", 0);
+			}
 			return;
 		}
+		if (RSF.GetI("rsf_standing_pushed", 0) == 0) RSF.SetI("rsf_standing_pushed", 1);
 
 		// WHERE THE TOP SITS. Absolute is a fixed world height, which is right
 		// for one flooded room and wrong for a level -- walk upstairs and you
-		// are above the weather. Following the floor keeps a constant depth of
-		// mist underfoot everywhere, which is what "ground mist" actually means.
+		// are above the weather. Following the floor measures the top from the
+		// floor you stand on, so the depth underfoot is the same everywhere;
+		// the number is how closely the fog tracks the floors around you.
 		double follow = RSF.GetF("rsf_follow", 0.35);
 		Level.SetFogFollow(follow, follow);
 
@@ -112,6 +128,10 @@ class RSF_Handler : EventHandler
 			RSF.GetF("rsf_indoor", 1.0),
 			RSF.GetF("rsf_outdoor", 1.0));
 
+		// RSF.RGB builds these names from a prefix, so tools\menu_lint.py cannot
+		// see them read. Declared here so its E2 check does not call them dead.
+		// LINT-CVARS: rsf_col_r rsf_col_g rsf_col_b rsf_grad_r rsf_grad_g rsf_grad_b
+		// LINT-CVARS: rsf_tint_r rsf_tint_g rsf_tint_b rsf_ignite_r rsf_ignite_g rsf_ignite_b
 		Level.SetFogSlab(
 			RSF.GetF("rsf_top", 64.0),
 			RSF.GetF("rsf_density", 0.55),
@@ -149,17 +169,37 @@ class RSF_Handler : EventHandler
 			RSF.GetF("rsf_tend_lean", 0.2),
 			RSF.GetF("rsf_tend_taper", 0.7));
 
-		Level.SetFogGradient(RSF.RGB("rsf_grad"), RSF.GetF("rsf_grad_mix", 0.0));
+		// The second colour -- or, while another mod has laid a tint over it
+		// (rsf_tint_mix above 0, RS_Sweeps' fog tint), that tint. One writer
+		// for the engine's gradient: this line.
+		double tintMix = RSF.GetF("rsf_tint_mix", 0.0);
+		if (tintMix > 0.0)
+			Level.SetFogGradient(RSF.RGB("rsf_tint"), clamp(tintMix, 0.0, 1.0));
+		else
+			Level.SetFogGradient(RSF.RGB("rsf_grad"), RSF.GetF("rsf_grad_mix", 0.0));
 		Level.SetFogPickup(RSF.GetF("rsf_pickup", 0.5));
+
+		// What an explosion burns. Its own colour -- it used to borrow the
+		// gradient colour above, which most presets leave black.
+		Level.SetFogIgniteColor(RSF.RGB("rsf_ignite"));
+
+		// What a passing sweep does to the mist. Nothing unless RS_Sweeps (or
+		// anything else) is drawing sweep bands; the engine bow only acts on
+		// those.
 		Level.SetFogBow(
 			RSF.GetF("rsf_bow", 0.0),
 			RSF.GetF("rsf_bow_width", 48.0),
 			RSF.GetF("rsf_bow_thin", 0.6));
-		// The wake's MOTION is pushed by PushWake, which is play scope and has
-		// the player's velocity. It used to be sent from here as well, reading
-		// two cvars nothing writes -- so this always pushed a zero direction
-		// and the stretch could never do anything.
 
+		// THE WAKE'S SHAPE -- size, strength, stretch. Look settings, so from
+		// here and live under the menu. Its position and direction come from
+		// the playsim in PushWake. Off means strength 0, pushed every tic: just
+		// not pushing it used to leave the hole frozen where it last was.
+		bool wake = RSF.GetB("rsf_wake", true);
+		Level.SetFogWakeShape(
+			RSF.GetF("rsf_wake_radius", 56.0),
+			wake ? RSF.GetF("rsf_wake_strength", 0.8) : 0.0,
+			RSF.GetF("rsf_wake_stretch", 1.6));
 	}
 
 	// ---- what happens in it ------------------------------------------------
@@ -171,14 +211,11 @@ class RSF_Handler : EventHandler
 		if (!RSF.GetB("rsf_enabled", true) || !RSF.GetB("rsf_wake", true)) return;
 		let pmo = players[consoleplayer].mo;
 		if (!pmo) return;
-		Level.SetFogWake(pmo.pos,
-			RSF.GetF("rsf_wake_radius", 56.0),
-			RSF.GetF("rsf_wake_strength", 0.8));
+		Level.SetFogWakePos(pmo.pos);
 
 		// THE DIRECTION, or the stretch does nothing. The shader only stretches
-		// the wake when it has a velocity to stretch it ALONG -- and nothing
-		// ever supplied one, so the Wake stretch slider had never done anything
-		// at all. The position was pushed and the motion was not.
+		// the wake when it has a velocity to stretch it ALONG. The stretch rides
+		// along and matches what Push sent, so the two never disagree.
 		Level.SetFogWakeMotion(pmo.vel.x, pmo.vel.y,
 			RSF.GetF("rsf_wake_stretch", 1.6));
 	}
@@ -189,9 +226,12 @@ class RSF_Handler : EventHandler
 	// THROTTLED HARD, and this is the whole reason it is not per-actor per-tic.
 	// There are 32 disturbance slots and they recycle oldest-first, so a room
 	// of thirty monsters each pushing one every tic means every slot is a tenth
-	// of a second old and nothing has time to read as a wake. One monster per
-	// tic, round-robin by distance, leaves each disturbance alive long enough
-	// to be seen.
+	// of a second old and nothing has time to read as a wake. One pick every
+	// rsf_wader_every tics leaves each disturbance alive long enough to be seen.
+	//
+	// The pick is the nearest moving monster that did NOT go last time. Strictly
+	// the nearest gave one monster every pick, so the ones further off never
+	// parted the mist at all.
 	void Waders()
 	{
 		if (!RSF.GetB("rsf_enabled", true) || !RSF.GetB("rsf_waders", true)) return;
@@ -201,7 +241,8 @@ class RSF_Handler : EventHandler
 		let pmo = players[consoleplayer].mo;
 		if (!pmo) return;
 
-		double best = RSF.GetF("rsf_wader_range", 1024.0);
+		double range = RSF.GetF("rsf_wader_range", 1024.0);
+		double best = range, lastDist = range;
 		Actor pick = null;
 
 		let it = ThinkerIterator.Create("Actor");
@@ -211,17 +252,19 @@ class RSF_Handler : EventHandler
 			if (!a || !a.bIsMonster || a.health <= 0) continue;
 			if (a.vel.xy.Length() < 1.0) continue;     // standing still parts no mist
 			double d = (a.pos.xy - pmo.pos.xy).Length();
+			if (a == lastWader) { lastDist = d; continue; }
 			if (d < best) { best = d; pick = a; }
 		}
 
-		if (pick)
-			Level.FogDisturb(pick.pos.x, pick.pos.y, pick.pos.z,
-				pick.radius * 2.2, 0.7, 0.0, 0.6, D_DISC);
+		// Nobody else moving in range: the last one may go again.
+		if (!pick && lastWader && lastDist < range) pick = lastWader;
+		if (!pick) return;
+
+		lastWader = pick;
+		Level.FogDisturb(pick.pos.x, pick.pos.y, pick.pos.z,
+			pick.radius * 2.2, 0.7, 0.0, 0.6, D_DISC);
 	}
 
-	// An explosion lights the mist rather than clearing it. IGNITE adds light
-	// and no density, which is why it works in a room with the fog switched
-	// off -- and it is the one disturbance mode that does.
 	override void WorldThingDied(WorldEvent e)
 	{
 		if (!RSF.GetB("rsf_enabled", true)) return;
@@ -239,7 +282,14 @@ class RSF_Handler : EventHandler
 			RSF.GetF("rsf_death_life", 0.9), D_RIPPLE);
 	}
 
-	// Anything exploding lights the mist from inside.
+	// Anything exploding lights the mist from inside. IGNITE adds light and no
+	// density, so it shows even where there is no mist -- the Off preset
+	// included. Switching the mod off stops it.
+	//
+	// The engine fills DamageIsRadius (DMG_EXPLOSION) and DamagePosition (the
+	// inflictor, else the source, else the victim) for thing damage. It used to
+	// leave both unset, so this read garbage and the flash rarely fired.
+
 	// The tic and inflictor of the last ignite, so one blast is one flash.
 	private int lastIgniteTic;
 	private Actor lastIgniteSrc;

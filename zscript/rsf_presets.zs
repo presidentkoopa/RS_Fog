@@ -8,6 +8,10 @@
 
 class RSF_Presets
 {
+	// How many Apply knows about. SyncPreset clamps to this, so adding a preset
+	// and forgetting to raise it sends the new one to the default instead.
+	const COUNT = 20;
+
 	static void F(String n, double v) { let c = CVar.FindCVar(n); if (c) c.SetFloat(v); }
 	static void I(String n, int v)    { let c = CVar.FindCVar(n); if (c) c.SetInt(v); }
 
@@ -53,14 +57,6 @@ class RSF_Presets
 		F("rsf_indoor", indoor); F("rsf_outdoor", outdoor);
 	}
 
-	// EVERY TERM, NEUTRAL. Called by Apply before the preset runs, so a preset
-	// only has to state what it actually cares about and can never wear the
-	// leftovers of the one before it.
-	//
-	// This is the shape GlowInTheDark and Darkness already had and Fog did not,
-	// which is exactly how seven presets ended up inheriting an indoor/outdoor
-	// split they never asked for: pick Courtyard, switch to Swamp, and Swamp
-	// stayed thin indoors with nothing in the menu to explain it.
 	// ---- ground the sixteen do not cover -------------------------------------
 	//
 	// Untouched across the whole existing set: the bottom edge (every preset is
@@ -119,9 +115,9 @@ class RSF_Presets
 	}
 
 	// Weather driven hard across open ground and stopping dead at a doorway.
-	// Closest to Courtyard, but this is the widest split the sliders allow, the
-	// drift is nearly four times Courtyard's, and it is the only preset that
-	// drifts SOUTH as well as east.
+	// Closest to Courtyard, but this is the widest indoor/outdoor split in the
+	// set, the drift is nearly four times Courtyard's, and it is the only preset
+	// that drifts SOUTH as well as east.
 	static void Gale()
 	{
 		Zones(0.05, 1.9);
@@ -133,6 +129,19 @@ class RSF_Presets
 		F("rsf_pickup", 0.35);
 	}
 
+	// EVERY TERM, NEUTRAL. Called by Apply before the preset runs, so a preset
+	// only has to state what it actually cares about and can never wear the
+	// leftovers of the one before it.
+	//
+	// This is the shape GlowInTheDark and Darkness already had and Fog did not,
+	// which is exactly how seven presets ended up inheriting an indoor/outdoor
+	// split they never asked for: pick Courtyard, switch to Swamp, and Swamp
+	// stayed thin indoors with nothing in the menu to explain it.
+	//
+	// The bottom's period and roll have no menu row, so a console-set value
+	// used to survive every preset change with nothing to explain it. The sweep
+	// bow and the flash colour are NOT reset here: they sit on the Events page,
+	// which presets never touch.
 	static void Base()
 	{
 		Zones(1.0, 1.0);
@@ -144,7 +153,8 @@ class RSF_Presets
 		F("rsf_grad_mix", 0.0);
 		F("rsf_pickup", 0.5);
 		F("rsf_bottom", -256.0);
-		F("rsf_bow", 0.0);
+		F("rsf_bottom_period", 0.0);
+		F("rsf_bottom_roll", 0.0);
 	}
 
 	static void Apply(int idx)

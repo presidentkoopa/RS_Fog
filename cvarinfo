@@ -89,6 +89,23 @@ server float rsf_grad_mix    = 0.0;
 // fog goes whatever colour the lighting is.
 server float rsf_pickup      = 0.55;
 
+// A TRANSIENT TINT another mod lays over the second colour -- RS_Sweeps' fog
+// tint effect, while a sweep band is washing over the mist. Mix 0 means no
+// override and the gradient above is used as normal.
+//
+// It exists because two callers shared one engine gradient: RS_Sweeps set it
+// from WorldTick and this mod's UiTick push put rsf_grad straight back before
+// a frame was drawn, so the sweep's colour never showed. Now the writer sets
+// these and this mod pushes them in place of its own.
+//
+// NOSAVE: local, immediate, never on the wire. Zeroed when a map loads or
+// unloads, because a nosave value persists in the ini and a tint left behind
+// by a sweep that never finished would otherwise stick.
+nosave int   rsf_tint_r      = 0;
+nosave int   rsf_tint_g      = 0;
+nosave int   rsf_tint_b      = 0;
+nosave float rsf_tint_mix    = 0.0;
+
 // ------------------------------------------------------------------ wake --
 // One lagging point that thins the mist where you just walked. Its size,
 // strength and stretch are pushed with the standing fog, so they move while the

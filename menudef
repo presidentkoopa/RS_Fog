@@ -57,12 +57,15 @@ OptionMenu "RSFBody"
 	StaticText "0 pins it to a fixed world height, which is", "gray"
 	StaticText "right for one flooded room and wrong for a", "gray"
 	StaticText "level -- walk upstairs and you are above the", "gray"
-	StaticText "weather. Higher values keep a constant depth", "gray"
-	StaticText "underfoot; the number is how GENTLY it does", "gray"
-	StaticText "it, so a staircase becomes a slope rather", "gray"
-	StaticText "than a flight of steps.", "gray"
+	StaticText "weather. Above 0 the height is measured from the", "gray"
+	StaticText "floor you stand on, so the depth underfoot is", "gray"
+	StaticText "the same everywhere. The number is how closely", "gray"
+	StaticText "it tracks other floors: lower turns a staircase", "gray"
+	StaticText "into a slope rather than a flight of steps.", "gray"
 	StaticText ""
 	Slider "Bottom", "rsf_bottom", -1024.0, 256.0, 16.0, 0
+	StaticText "Measured like the top. Below 0 the mist goes all", "gray"
+	StaticText "the way down; above 0 it floats as a band.", "gray"
 }
 
 OptionMenu "RSFSurface"
@@ -163,7 +166,8 @@ OptionMenu "RSFEvents"
 	StaticText "There are 32 disturbance slots and they recycle", "gray"
 	StaticText "oldest first. Push one per monster per tic and", "gray"
 	StaticText "every slot is a tenth of a second old, so none", "gray"
-	StaticText "lives long enough to read as a wake.", "gray"
+	StaticText "lives long enough to read as a wake. Each pick is", "gray"
+	StaticText "the nearest moving monster that did not go last.", "gray"
 	StaticText ""
 	Option "Deaths ripple", "rsf_death_ripple", "OnOff"
 	Slider "Ripple strength", "rsf_death_strength", 0.0, 1.0, 0.05, 2
@@ -172,8 +176,19 @@ OptionMenu "RSFEvents"
 	Option "Explosions light it", "rsf_ignite", "OnOff"
 	Slider "Flash size", "rsf_ignite_radius", 32.0, 512.0, 16.0, 0
 	Slider "Flash strength", "rsf_ignite_strength", 0.0, 2.0, 0.1, 1
-	StaticText "This one adds LIGHT and no mist, so it still", "gray"
-	StaticText "shows with the fog switched off.", "gray"
+	Slider "Flash red", "rsf_ignite_r", 0, 255, 5, 0
+	Slider "Flash green", "rsf_ignite_g", 0, 255, 5, 0
+	Slider "Flash blue", "rsf_ignite_b", 0, 255, 5, 0
+	StaticText "This one adds LIGHT and no mist, so it shows even", "gray"
+	StaticText "where there is no mist -- the Off preset included.", "gray"
+	StaticText ""
+	StaticText "WHEN A SWEEP PASSES -- needs RS_Sweeps", "white"
+	Slider "Pushed ahead of it", "rsf_bow", 0.0, 2.0, 0.05, 2
+	Slider "  across this width", "rsf_bow_width", 8.0, 256.0, 8.0, 0
+	Slider "  thin behind it", "rsf_bow_thin", 0.0, 1.0, 0.05, 2
+	StaticText "A sweep band shoulders the mist into a bank along", "gray"
+	StaticText "its front and leaves it thin where it has been.", "gray"
+	StaticText "0 lets sweeps pass through without touching it.", "gray"
 }
 
 // WITHOUT THIS THE MENU ABOVE EXISTS AND IS UNREACHABLE. Defining an
