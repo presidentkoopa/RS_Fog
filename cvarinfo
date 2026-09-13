@@ -11,9 +11,23 @@
 // ---------------------------------------------------------------- master --
 server bool  rsf_enabled     = true;
 server int   rsf_preset      = 1;
+
 // Internal: the preset last applied, so a preset only re-applies when it
 // CHANGES rather than on every map load, which would wipe slider tweaks.
-server int   rsf_preset_applied = -1;
+//
+// NOSAVE, NOT SERVER, and the distinction is load-bearing. A server cvar is not
+// written locally when you set it: the write is queued to the network and only
+// lands once that tic's commands run. WorldTick and then UiTick both read the
+// latch before it lands, so each re-applied the whole preset -- about sixty
+// server writes, again every tic until the first one arrived. That is the
+// pattern that overflowed the net buffer ("Attempted to write past end of
+// stream") in RS_GlowInTheDark. Same fix as RS_Sweeps, RS_Darkness and GitD.
+nosave int   rsf_preset_applied = -1;
+
+// Internal: whether the standing fog was pushed while enabled, so switching the
+// mod off clears the slab ONCE instead of every tic. Clearing every tic erased
+// anyone else's slab for as long as the fog stayed off.
+nosave int   rsf_standing_pushed = 0;
 
 // ------------------------------------------------------------------ body --
 server float rsf_top         = 56.0;    // how high the mist reaches
@@ -21,14 +35,17 @@ server float rsf_density     = 0.45;    // 0 = off
 server float rsf_soft        = 28.0;    // how soft the top edge is
 server float rsf_scatter     = 1.0;     // how much the flashlight lights it
 
-// Which reference the edges follow. 0 = a fixed world height, positive =
-// follows the floor. The magnitude is GENTLENESS: 0.35 turns a staircase into
-// a slope rather than a flight of steps. A fixed height is right for one
-// flooded room and wrong for a level -- walk upstairs and you are above the
-// weather.
+// Which reference the edges follow. 0 = a fixed world height. Above 0, the top
+// and bottom are heights ABOVE THE FLOOR YOU STAND ON, so the depth underfoot
+// is the same on any floor. The number is how closely the fog tracks OTHER
+// floors: at 1 every step shows, at 0.35 a step ten units up raises the fog
+// three, so a staircase reads as a slope rather than a flight of steps.
 server float rsf_follow      = 0.35;
 
+// The layer's bottom, measured the same way as the top. Far below 0 is fog all
+// the way down; above 0 lifts it into a floating band.
 server float rsf_bottom      = -256.0;
+// A stacked, rolling bottom. No menu row; presets reset both to 0.
 server float rsf_bottom_period = 0.0;
 server float rsf_bottom_roll = 0.0;
 
@@ -73,18 +90,13 @@ server float rsf_grad_mix    = 0.0;
 server float rsf_pickup      = 0.55;
 
 // ------------------------------------------------------------------ wake --
-// One lagging point that thins the mist where you just walked.
+// One lagging point that thins the mist where you just walked. Its size,
+// strength and stretch are pushed with the standing fog, so they move while the
+// menu is open; only its position comes from the playsim.
 server bool  rsf_wake        = true;
 server float rsf_wake_radius = 56.0;
 server float rsf_wake_strength = 0.8;
-server float rsf_wake_vel_x  = 0.0;
-server float rsf_wake_vel_y  = 0.0;
 server float rsf_wake_stretch = 1.6;
-
-// A bow wave pushed ahead of it.
-server float rsf_bow         = 0.0;
-server float rsf_bow_width   = 48.0;
-server float rsf_bow_thin    = 0.6;
 
 // ---------------------------------------------------------------- waders --
 // Monsters shouldering the mist aside as they move.
@@ -92,7 +104,7 @@ server float rsf_bow_thin    = 0.6;
 // THROTTLED HARD on purpose. There are 32 disturbance slots, recycled oldest
 // first, so thirty monsters each pushing one every tic means every slot is a
 // tenth of a second old and nothing lives long enough to read as a wake. One
-// per tick-window, nearest first.
+// pick per window: the nearest moving monster that did not go last time.
 server bool  rsf_waders      = true;
 server int   rsf_wader_every = 6;       // tics between picks
 server float rsf_wader_range = 1024.0;  // how far out to bother looking
@@ -105,14 +117,25 @@ server float rsf_death_speed  = 220.0;
 server float rsf_death_life   = 0.9;
 
 // An explosion LIGHTS the mist rather than clearing it. This is the one
-// disturbance mode that adds light and no density, which is why it still shows
-// in a room with the fog switched off.
+// disturbance mode that adds light and no density, so it shows even where there
+// is no mist -- the Off preset included. Switching the mod off stops it.
 server bool  rsf_ignite      = true;
 server int   rsf_ignite_min  = 20;      // minimum radius damage to count
 server float rsf_ignite_radius = 192.0;
 server float rsf_ignite_strength = 1.0;
 server float rsf_ignite_speed = 320.0;
 server float rsf_ignite_life = 0.5;
+// The flash's own colour. It used to be the second fog colour, which most
+// presets leave black, so explosions added black light and nothing showed.
+server int   rsf_ignite_r    = 255;
+server int   rsf_ignite_g    = 150;
+server int   rsf_ignite_b    = 70;
+
+// A sweep band (RS_Sweeps) pushing the mist ahead of its front and leaving it
+// thin behind. 0 lets sweeps pass through the fog without touching it.
+server float rsf_bow         = 0.0;
+server float rsf_bow_width   = 48.0;
+server float rsf_bow_thin    = 0.6;
 
 server float rsf_indoor  = 1.0;
 server float rsf_outdoor = 1.0;
