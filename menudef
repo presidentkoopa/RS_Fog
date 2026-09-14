@@ -1,3 +1,14 @@
+// menu_lint (tools\menu_lint.py) holds the tuning pages to the live-slider
+// rule: every slider on them has to move the fog while the menu is open, which
+// here means RSF_Handler.Push, run from UiTick -- see LINT-UI-LIVE there.
+// LINT-LIVE: RSFBody RSFSurface RSFTendrils RSFColor RSFRooms RSFEvents
+//
+// NOT LOOK SLIDERS, and exempt for that. These Events rows shape a disturbance
+// at the moment a thing happens -- a wader picked, a monster dying, a blast --
+// and the playsim is stopped while the menu is up, so nothing happens to show
+// them. The flash COLOUR and the wake's and the bow's shapes are pushed live.
+// LINT-LIVE-OK: rsf_wader_every rsf_death_strength rsf_death_speed rsf_ignite_radius rsf_ignite_strength
+
 OptionValue "RSF_Preset"
 {
 	0, "Off"

@@ -93,6 +93,18 @@ class RSF_Handler : EventHandler
 
 	// ---- the standing settings ---------------------------------------------
 
+	// Every look slider on the live pages is pushed from here, and UiTick runs
+	// it, so the mist moves under the menu. Declared for menu_lint's live-page
+	// check:
+	// LINT-UI-LIVE: rsf_top rsf_density rsf_soft rsf_scatter rsf_follow rsf_bottom
+	// LINT-UI-LIVE: rsf_surf_amp rsf_surf_len rsf_surf_speed rsf_surf_cross
+	// LINT-UI-LIVE: rsf_noise_scale rsf_noise_depth rsf_drift_x rsf_drift_y
+	// LINT-UI-LIVE: rsf_tend_density rsf_tend_spacing rsf_tend_radius rsf_tend_height
+	// LINT-UI-LIVE: rsf_tend_rise rsf_tend_spread rsf_tend_lean rsf_tend_taper
+	// LINT-UI-LIVE: rsf_col_r rsf_col_g rsf_col_b rsf_grad_mix rsf_grad_r rsf_grad_g rsf_grad_b rsf_pickup
+	// LINT-UI-LIVE: rsf_indoor rsf_outdoor rsf_ignite_r rsf_ignite_g rsf_ignite_b
+	// LINT-UI-LIVE: rsf_bow rsf_bow_width rsf_bow_thin rsf_wake_radius rsf_wake_strength rsf_wake_stretch
+
 	clearscope void Push()
 	{
 		if (!Level) return;
