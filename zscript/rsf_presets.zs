@@ -10,7 +10,7 @@ class RSF_Presets
 {
 	// How many Apply knows about. SyncPreset clamps to this, so adding a preset
 	// and forgetting to raise it sends the new one to the default instead.
-	const COUNT = 20;
+	const COUNT = 25;
 
 	static void F(String n, double v) { let c = CVar.FindCVar(n); if (c) c.SetFloat(v); }
 	static void I(String n, int v)    { let c = CVar.FindCVar(n); if (c) c.SetInt(v); }
@@ -129,6 +129,96 @@ class RSF_Presets
 		F("rsf_pickup", 0.35);
 	}
 
+	// ---- 20-24: the heavy end (owner, 2026-09-18: "more denser options") -----
+	//
+	// The existing ladder tops out at Pea Soup (1.45 over 640 units), which was
+	// the Density slider's old maximum. These five go past it, so the slider now
+	// reaches 3.0 and the top reaches 1024 -- range added, nothing moved.
+	//
+	// Density is per 1000 units of travel below the top, so doubling it halves
+	// the distance you can see into the fog. Each of these picks a different way
+	// to be thick rather than just a bigger number: everywhere, underfoot, at
+	// eye level, a ceiling with clear air under it, and drowned.
+
+	// 20 -- THICK EVERYWHERE, AND BRIGHT WITH IT. Daylight in cloud: the fog is
+	// its own light source rather than something the torch has to find. Barely
+	// moves, takes almost no colour from the room, so it reads as distance
+	// rather than as weather. Pea Soup with half again the density and a much
+	// brighter body.
+	static void Whiteout()
+	{
+		Zones(1.0, 1.0);
+		Slab(768.0, 1.90, 140.0, 1.70, 0.05);
+		Motion(20.0, 380.0, 0.35, 0.70, 0.008, 0.55, 1.5, 0.8);
+		RGB("rsf_col", 226, 230, 238);
+		RGB("rsf_grad", 176, 182, 196);
+		F("rsf_grad_mix", 0.35);
+		F("rsf_pickup", 0.30);
+	}
+
+	// 21 -- DENSE AND LOW. Waist height, but thick enough that your legs are
+	// gone: the densest thing in the set per unit of travel, over the shortest
+	// span. Nearly black on its own and takes most of its colour from the room,
+	// so a lamp turns the whole pool the lamp's colour. Hugs the floor hard.
+	static void Tar()
+	{
+		Zones(1.0, 1.0);
+		Slab(140.0, 2.40, 30.0, 1.90, 0.60);
+		Motion(14.0, 200.0, 0.30, 0.75, 0.016, 0.60, 1.0, 0.5);
+		Tendrils(0.45, 150.0, 26.0, 120.0, 0.35, 0.45, 0.25, 0.70);
+		RGB("rsf_col", 46, 44, 42);
+		RGB("rsf_grad", 22, 20, 18);
+		F("rsf_grad_mix", 0.50);
+		F("rsf_pickup", 0.85);
+	}
+
+	// 22 -- THICK AND SICK. Toxic's colour at four times its density and four
+	// times its height, with wisps standing in it. Reads as a chemical leak
+	// rather than as weather, and it is the dense preset that is still clearly
+	// a COLOUR rather than a grey.
+	static void Sulphur()
+	{
+		Zones(1.0, 1.0);
+		Slab(360.0, 1.80, 70.0, 1.60, 0.20);
+		Motion(18.0, 232.0, 0.75, 0.70, 0.018, 0.58, 3.5, 1.8);
+		Tendrils(0.55, 150.0, 22.0, 170.0, 0.80, 0.50, 0.30, 0.60);
+		RGB("rsf_col", 176, 178, 96);
+		RGB("rsf_grad", 124, 142, 58);
+		F("rsf_grad_mix", 0.55);
+		F("rsf_pickup", 0.80);
+	}
+
+	// 23 -- A THICK CEILING WITH CLEAR AIR UNDER IT. Shelf's idea at nearly
+	// three times the density: standing, you see nothing; crouched, the floor
+	// and everyone's feet are clear. The only dense preset you can duck out of,
+	// and the reason the bottom edge exists.
+	static void Bank()
+	{
+		Zones(1.0, 1.0);
+		Slab(176.0, 2.20, 24.0, 1.50, 0.45);
+		F("rsf_bottom", 56.0);
+		Motion(10.0, 256.0, 0.50, 0.70, 0.013, 0.50, 2.0, 1.0);
+		RGB("rsf_col", 138, 144, 156);
+		RGB("rsf_grad", 84, 90, 104);
+		F("rsf_grad_mix", 0.45);
+		F("rsf_pickup", 0.60);
+	}
+
+	// 24 -- THE WHOLE MAP, GONE. The top is above anything Doom builds and the
+	// density is the set's highest, so there is no surface to look down at and
+	// no clear air anywhere: you navigate by the torch, by glow and by sound.
+	// The end of the ladder -- nothing denser would look different, only slower.
+	static void Drowned()
+	{
+		Zones(1.0, 1.0);
+		Slab(1024.0, 2.80, 160.0, 2.00, 0.0);
+		Motion(30.0, 400.0, 0.40, 0.75, 0.007, 0.65, 1.5, 0.8);
+		RGB("rsf_col", 96, 104, 116);
+		RGB("rsf_grad", 40, 46, 56);
+		F("rsf_grad_mix", 0.60);
+		F("rsf_pickup", 0.70);
+	}
+
 	// EVERY TERM, NEUTRAL. Called by Apply before the preset runs, so a preset
 	// only has to state what it actually cares about and can never wear the
 	// leftovers of the one before it.
@@ -184,6 +274,11 @@ class RSF_Presets
 		case 17: Shelf();      break;
 		case 18: Chapel();     break;
 		case 19: Gale();       break;
+		case 20: Whiteout();   break;
+		case 21: Tar();        break;
+		case 22: Sulphur();    break;
+		case 23: Bank();       break;
+		case 24: Drowned();    break;
 		}
 	}
 

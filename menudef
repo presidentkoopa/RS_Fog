@@ -31,6 +31,11 @@ OptionValue "RSF_Preset"
 	17, "Shelf"
 	18, "Chapel (thick indoors)"
 	19, "Gale"
+	20, "Whiteout (dense, bright)"
+	21, "Tar (dense, low, dark)"
+	22, "Sulphur (dense, toxic)"
+	23, "Bank (dense, duck under it)"
+	24, "Drowned (densest)"
 }
 
 OptionMenu "RSFMain"
@@ -57,8 +62,8 @@ OptionMenu "RSFMain"
 OptionMenu "RSFBody"
 {
 	Title "The Body"
-	Slider "How high it reaches", "rsf_top", 0.0, 640.0, 8.0, 0
-	Slider "How thick", "rsf_density", 0.0, 1.5, 0.05, 2
+	Slider "How high it reaches", "rsf_top", 0.0, 1024.0, 8.0, 0
+	Slider "How thick", "rsf_density", 0.0, 3.0, 0.05, 2
 	Slider "How soft the top edge", "rsf_soft", 1.0, 160.0, 4.0, 0
 	StaticText ""
 	Slider "Lit by the flashlight", "rsf_scatter", 0.0, 3.0, 0.1, 1
