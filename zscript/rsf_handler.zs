@@ -29,6 +29,27 @@ class RSF_Handler : EventHandler
 	const D_IGNITE = 2;   // an expanding sphere that adds LIGHT, not density
 	const D_GOUT   = 3;   // an expanding disc that ADDS mist -- a vent, a burst
 
+
+	// ---- SURVIVING A SAVEGAME LOAD -----------------------------------------
+	//
+	// The engine SKIPS WorldLoaded for a non-static handler on a save restore
+	// (events.cpp: `if (!handler->IsStatic() && savegamerestore) continue;`),
+	// and this handler is not static. So a load arrives with the preset cvar
+	// restored from the save -- along with every slider tuned on top of it --
+	// while the applied latch, which is nosave, reads whatever was showing
+	// before the load. The tick then sees "wanted != applied", calls it a fresh
+	// pick, and stamps the whole preset over the tuning the save just restored.
+	//
+	// A handler FIELD is serialized with the save, so it comes back saying
+	// which preset the restored cvars already belong to. Stored PLUS ONE, so a
+	// save written before this field existed reads 0 and restores nothing.
+	//
+	// Ported from RS_Darkness, which had this first and is the reference shape.
+	int savedLatch;
+	// False until this handler has had a live start. Transient, so a handler
+	// restored from a save comes back with it false.
+	transient bool loadedLive;
+
 	private int waderTimer;
 	// The monster picked last window, so the next pick goes to someone else.
 	private Actor lastWader;
@@ -41,7 +62,9 @@ class RSF_Handler : EventHandler
 		// so applying on every map load resets every setting -- which is
 		// exactly what rsf_preset_applied exists to prevent, and what the
 		// cvarinfo comment on it says it prevents. This bypassed its own guard.
+		loadedLive = true;
 		SyncPreset();
+		savedLatch = RSF.GetI("rsf_preset_applied", -1) + 1;
 		Level.ClearFogDisturb();
 		// No sweep is tinting the mist on a fresh map. The override is nosave,
 		// so it survives in the ini; a tint left by a band that never finished
@@ -60,10 +83,22 @@ class RSF_Handler : EventHandler
 
 	override void WorldTick()
 	{
+		if (!loadedLive) ResumeFromSave();
+
 		SyncPreset();
+		savedLatch = RSF.GetI("rsf_preset_applied", -1) + 1;
 		Push();
 		PushWake();
 		Waders();
+	}
+
+	// A handler restored from a save. The look cvars are the save's own, so
+	// match the latch to the preset they were set under rather than applying
+	// anything over them.
+	void ResumeFromSave()
+	{
+		loadedLive = true;
+		if (savedLatch > 0) RSF.SetI("rsf_preset_applied", savedLatch - 1);
 	}
 
 	// The playsim stops while the menu is up, so WorldTick alone would freeze
@@ -75,7 +110,10 @@ class RSF_Handler : EventHandler
 	// the mist rippling while the game is paused.
 	override void UiTick()
 	{
-		SyncPreset();
+		// Not until WorldTick has matched the latch to a restored save: a sync
+		// here first would see the mismatch and re-apply over the save. The
+		// push does not wait -- it only reads what the save put back.
+		if (loadedLive) SyncPreset();
 		Push();
 	}
 
