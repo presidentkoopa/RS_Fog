@@ -36,6 +36,7 @@ OptionValue "RSF_Preset"
 	22, "Sulphur (dense, toxic)"
 	23, "Bank (dense, duck under it)"
 	24, "Drowned (densest)"
+	25, "Knee deep (dense, watch it move)"
 }
 
 OptionMenu "RSFMain"

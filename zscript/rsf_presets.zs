@@ -10,7 +10,7 @@ class RSF_Presets
 {
 	// How many Apply knows about. SyncPreset clamps to this, so adding a preset
 	// and forgetting to raise it sends the new one to the default instead.
-	const COUNT = 25;
+	const COUNT = 26;
 
 	static void F(String n, double v) { let c = CVar.FindCVar(n); if (c) c.SetFloat(v); }
 	static void I(String n, int v)    { let c = CVar.FindCVar(n); if (c) c.SetInt(v); }
@@ -219,6 +219,32 @@ class RSF_Presets
 		F("rsf_pickup", 0.70);
 	}
 
+
+	// 25 -- KNEE DEEP AND SOLID. The density of Tar at half its height: the top
+	// sits just above the knee, so you look DOWN at the surface and watch it
+	// move, and it is thick enough that your boots are gone in it.
+	//
+	// This is the one to switch the Events on for. Everything the fog does in
+	// answer to the world happens AT ITS SURFACE -- your wake, monsters parting
+	// it, a death rippling it, an explosion lighting it from inside -- and at
+	// chest height you are standing inside the effect instead of looking at it.
+	// A crisp edge (softness 12, the tightest in the set) is what makes a wake
+	// read as a wake rather than as a soft patch.
+	//
+	// It hugs the floor hard so stairs and ledges cut it cleanly, and takes most
+	// of its colour from the room so a torch beam through it carries.
+	static void KneeDeep()
+	{
+		Zones(1.0, 1.0);
+		Slab(52.0, 2.60, 12.0, 1.80, 0.75);
+		Motion(9.0, 176.0, 0.60, 0.80, 0.020, 0.55, 1.5, 0.8);
+		Tendrils(0.35, 132.0, 18.0, 84.0, 0.55, 0.40, 0.20, 0.80);
+		RGB("rsf_col", 150, 156, 164);
+		RGB("rsf_grad", 92, 98, 108);
+		F("rsf_grad_mix", 0.45);
+		F("rsf_pickup", 0.80);
+	}
+
 	// EVERY TERM, NEUTRAL. Called by Apply before the preset runs, so a preset
 	// only has to state what it actually cares about and can never wear the
 	// leftovers of the one before it.
@@ -279,6 +305,7 @@ class RSF_Presets
 		case 22: Sulphur();    break;
 		case 23: Bank();       break;
 		case 24: Drowned();    break;
+		case 25: KneeDeep();   break;
 		}
 	}
 
